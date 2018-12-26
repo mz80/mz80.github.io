@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>服务器部署</title>
+<BR><BR><BR>
+<xmp theme="united" style="display:none;">
+
+# NFS安装与配置
+### NFS服务器
+
+
+- 服务安装
+```
+yum install nfs-utils rpcbind
+```
+
+- 编辑`/etc/exports`，添加以下要分享的目录
+```
+/data *(rw,sync,no_root_squash)
+```
+
+- 添加开机启动，并启动NFS服务
+```
+systemctl enable nfs rpcbind
+systemctl start nfs
+```
+
+- 查看当前已分享目录`exportfs -s`
+```
+[root@nfs data]# exportfs -s
+/data  *(rw,sync,wdelay,hide,no_subtree_check,sec=sys,secure,no_root_squash,no_all_squash)
+[root@nfs data]#
+```
+
+- 如果NFS有改变，重新分享所有目录`exportfs -r`
+
+- 如果有防火墙
+```
+firewall-cmd --permanent --zone=public --add-service=nfs
+firewall-cmd --reload
+```
+
+
+### 其它要挂载NFS的服务器
+
+- 程序安装
+
+	- Ubuntu
+	```
+	apt-get install nfs-common
+	```
+
+	- CentOS
+	```
+	yum install nfs-utils
+```
+
+- 手动挂载
+```
+mount -t nfs 172.16.179.166:/data /mnt/data
+```
+
+- 开机自动挂载，写入`/etc/fstab`
+```
+172.16.179.166:/data    /mnt/data   nfs   defaults   0 0
+```
+
+
+
+</xmp>
+
+<script src="../../strapdown/strapdown.js"></script>
+</html>

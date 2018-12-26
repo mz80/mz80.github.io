@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>服务器部署</title>
+<BR><BR><BR>
+<xmp theme="united" style="display:none;">
+
+## SELinux配置
+
+CentOS系统安装好后，SELinux默认处于`enforcing`状态，可使用`sestatus`指令查看，如下所示：
+
+```
+[root@vpn1 ~]# sestatus -v
+SELinux status:                 enabled
+SELinuxfs mount:                /sys/fs/selinux
+SELinux root directory:         /etc/selinux
+Loaded policy name:             targeted
+Current mode:                   enforcing
+Mode from config file:          enforcing
+Policy MLS status:              enabled
+Policy deny_unknown status:     allowed
+Max kernel policy version:      28
+[root@vpn1 ~]#
+```
+
+使用`setenforce`指令可以动态切换SELinux的运行状态，`setenforce 0`表示停止SELinux，`setenforce 1`表示启动SELinux，为了保证程序正常运行，通常停止SELinux。
+
+使用`setenforce 0`后，查看SELinux状态：
+
+```
+[root@vpn1 ~]# sestatus -v
+SELinux status:                 enabled
+SELinuxfs mount:                /sys/fs/selinux
+SELinux root directory:         /etc/selinux
+Loaded policy name:             targeted
+Current mode:                   permissive
+Mode from config file:          enforcing
+Policy MLS status:              enabled
+Policy deny_unknown status:     allowed
+Max kernel policy version:      28
+[root@vpn1 ~]# 
+```
+
+如果要使用SELinux状态开机生效，需要修改`/etc/selinux/config`，如下：
+
+```
+[root@vpn1 ~]# cat /etc/selinux/config 
+
+# This file controls the state of SELinux on the system.
+# SELINUX= can take one of these three values:
+#     enforcing - SELinux security policy is enforced.
+#     permissive - SELinux prints warnings instead of enforcing.
+#     disabled - No SELinux policy is loaded.
+#SELINUX=enforcing
+SELINUX=permissive
+# SELINUXTYPE= can take one of three two values:
+#     targeted - Targeted processes are protected,
+#     minimum - Modification of targeted policy. Only selected processes are protected. 
+#     mls - Multi Level Security protection.
+SELINUXTYPE=targeted 
+
+```
+
+开机重启后，使用`sestatus`查看状态：
+
+```
+[root@vpn1 ~]# sestatus -v
+SELinux status:                 enabled
+SELinuxfs mount:                /sys/fs/selinux
+SELinux root directory:         /etc/selinux
+Loaded policy name:             targeted
+Current mode:                   permissive
+Mode from config file:          permissive
+Policy MLS status:              enabled
+Policy deny_unknown status:     allowed
+Max kernel policy version:      28
+[root@vpn1 ~]# 
+```
+
+
+</xmp>
+
+<script src="../../strapdown/strapdown.js"></script>
+</html>

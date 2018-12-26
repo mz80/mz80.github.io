@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>服务器部署</title>
+<BR><BR><BR>
+<xmp theme="united" style="display:none;">
+
+## 综述
+
+服务器一般采用三台实体机，可能会有单独的防火墙、路由器、存储系统。
+
+服务器操作系统一般使用ESXi部署，虚拟机以CentOS系统为主，配置大致分如下几项内容：
+
+- OpenVPN， 三台
+
+- NTP， 三台，主备
+
+- Haproxy，Keepalived，两台，主备
+
+- Web (Tomcat)，两台，负载均衡
+
+- Database (Mariadb)，三台，负载均衡
+
+- Redis，Keepalived，两台，主备
+
+- NFS，一台
+
+- Win7调试机，一台
+
+- **防火墙配置**，自己配置，或者客户方负责
+
+- **路由器配置**，自己配置，或者客户方负责
+
+- **网络规划**，一般自己规划
+
+以上配置可根据实际情况进行增减。
+
+
+
+
+</xmp>
+
+<script src="../../strapdown/strapdown.js"></script>
+</html>

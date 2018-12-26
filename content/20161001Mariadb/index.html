@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>服务器部署</title>
+<BR><BR><BR>
+<xmp theme="united" style="display:none;">
+
+# Database(MariaDB)安装
+
+集群环境
+
+```
+db0： 192.168.98.60
+db1： 192.168.98.61
+db2： 192.168.98.62
+```
+
+<BR>
+## 安装Mariadb更新源
+
+- 创建repo文件
+```
+touch /etc/yum.repos.d/mariadb.repo
+```
+
+- 编辑文件`/etc/yum.repos.d/mariadb.repo`
+```
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.1/centos7-amd64
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+enabled=1
+```
+
+- 更新yum缓存
+```
+yum clean all
+yum makecache
+```
+
+- 安装MariaDB和Galera
+```
+yum install -y MariaDB-server MariaDB-client galera
+```
+
+- 修改配置文件`/etc/my.cnf.d/server.cnf`
+
+```
+[mysqld]
+slow_query_log=ON
+general_log=OFF
+log_error=/var/log/mariadb/mariadb.log
+slow_query_log_file=/var/log/mariadb/slow_query.log
+general_log_file=/var/log/mariadb/queries.log
+
+[galera]
+# Mandatory settings
+wsrep_on=ON
+wsrep_provider=/usr/lib64/galera/libgalera_smm.so
+wsrep_cluster_address="gcomm://192.168.98.60,192.168.98.61,192.168.98.62,192.168.98.63"
+wsrep_cluster_name='galera_cluster'
+wsrep_node_address='192.168.98.62'
+wsrep_node_name='db2.bitcomtech.com'
+wsrep_sst_method=rsync
+binlog_format=row
+default_storage_engine=InnoDB
+innodb_autoinc_lock_mode=2
+
+#
+# Allow server to accept connections on all interfaces.
+#
+bind-address=0.0.0.0
+#
+# Optional setting
+#wsrep_slave_threads=1
+innodb_flush_log_at_trx_commit=2
+innodb_locks_unsafe_for_binlog=1
+innodb_log_file_size=100M
+innodb_file_per_table
+# On a dedicated database server you may set this parameter up to 80% of the machine physical memory size
+innodb_buffer_pool_size=1G
+query_cache_size=0
+query_cache_type=0
+
+```
+
+其中以下内容为当前服务器的IP和名字
+```
+wsrep_node_address='192.168.98.62'
+wsrep_node_name='db2.bitcomtech.com'
+```
+
+以下内容为所有服务器的IP，以逗号隔开
+```
+wsrep_cluster_address="gcomm://192.168.98.60,192.168.98.61,192.168.98.62,192.168.98.63"
+```
+
+
+
+- 配置日志转存`/etc/logrotate.d/mysql`
+
+```
+/var/log/mariadb/mariadb.log
+/var/log/mariadb/slow_query.log
+/var/log/mariadb/queries.log
+/var/lib/mysql/mysqld.log {
+        create 644 mysql mysql
+        notifempty 
+        daily
+        rotate 3
+        missingok
+        compress
+    postrotate
+	# just if mysqld is really running
+	if test -x /usr/bin/mysqladmin && \
+	   /usr/bin/mysqladmin ping &>/dev/null
+	then
+	   /usr/bin/mysqladmin flush-logs 
+	fi
+    endscript
+}
+
+```
+
+- 配置mysqladmin的密码
+```
+touch /root/.my.cnf
+vim /root/.my.cnf
+```
+添加以下内容
+```
+[mysqladmin]
+user=root
+password=zhtc
+```
+
+<BR>
+## 防火墙配置
+
+- 配置防火墙
+```
+firewall-cmd --permanent --zone=public --add-port=4567/tcp
+firewall-cmd --permanent --zone=public --add-port=4568/tcp
+firewall-cmd --permanent --zone=public --add-port=4444/tcp
+```
+
+- 允许访问mysql
+```
+firewall-cmd --permanent --zone=public --add-service=mysql
+```
+
+- 重载firewalld
+```
+firewall-cmd --reload
+```
+
+- 查看firewalld
+```
+firewall-cmd --list-all
+```
+
+
+<BR>
+## 数据库集群启动
+
+- 启动第一个节点
+```
+galera_new_cluster
+```
+
+- 启动其余节点
+```
+systemctl start mariadb
+```
+
+- 查看集群活动节点个数
+```
+mysqladmin extended-status --password=zhtc | grep wsrep_cluster_size
+```
+
+
+
+<BR>
+## 用户配置
+
+- 创建root密码
+```
+mysqladmin -u root -p password zhtc
+```
+
+- 连接数据库
+```
+mysql -u root -p
+```
+
+- 查看所有用户
+```
+select user from mysql.user;
+```
+
+- 创建haproxy用户，以用于HA检测DB是否在线
+```
+create user 'haproxy'@'%' identified by '';
+flush privileges;
+```
+
+- 允许root远程访问
+```
+grant all privileges on *.* to root@"%" identified by "zhtc";  
+flush privileges;
+```
+
+<BR>
+## 集群全部停机后恢复
+
+- 找出最新的节点，在每个节点上执行以下命令，找到数字最小的节点
+```
+galera_recovery
+```
+
+
+- 修改配置，把safe_to_bootstrap改为1
+```
+vim /var/lib/mysql/grastate.dat
+```
+
+
+
+- 启动节点
+```
+galera_new_cluster
+```
+
+- 启动其他节点
+```
+systemctl restart mariadb
+```
+
+</xmp>
+
+<script src="../../strapdown/strapdown.js"></script>
+</html>

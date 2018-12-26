@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>服务器部署</title>
+<BR><BR><BR>
+<xmp theme="united" style="display:none;">
+
+# Keepalived配置
+
+keeplived的作用是虚拟IP在主备服务器进行切换。
+keeplived与Haproxy安装在同一台服务器上。
+
+安装
+
+```shell
+yum install haproxy
+yum install keepalived
+```
+
+注意：
+
+- 一台做为`MASTER`，`priority`配置数字大100。
+
+- 一台做为`BACKUP`，`priority`配置数字小80。
+
+
+
+下例中的keeplived服务使用了虚拟IP`192.168.0.240`，两台实体机IP是`192.168.0.212`和`192.168.0.219`，虚拟IP会在两台主备服务器进行动态切换。
+
+配置文件`/etc/keepalived/keepalived.conf`内容如下：
+
+```
+[root@ha01 etc]# cat /etc/keepalived/keepalived.conf
+! Configuration File for keepalived
+
+global_defs {
+   router_id LVS_PROXY
+}
+
+vrrp_script haproxy_check {
+        script "/etc/keepalived/scripts/haproxy_check.sh"
+        interval 5
+        weight 2
+}
+
+vrrp_instance VI_1 {
+    state MASTER
+    interface ens160
+    virtual_router_id 51
+    priority 100
+    advert_int 1
+    authentication {
+        auth_type PASS
+        auth_pass test
+    }
+    virtual_ipaddress {
+        192.168.0.240
+    }
+    track_interface {
+        ens160
+    }
+    track_script {
+        haproxy_check
+    }
+}
+
+
+[root@ha01 etc]# 
+```
+
+
+
+在`/etc/keepalived`中建立`scripts`文件夹，创建两个脚本：
+
+```
+[root@ha01 keepalived]# ls -l scripts/
+total 8
+-rwxr-xr-x. 1 root root 203 Aug  9 14:56 haproxy_check.sh
+[root@ha01 keepalived]#
+```
+
+脚本`haproxy_check.sh`如下：
+
+```sh
+[root@ha01 keepalived]# cat scripts/haproxy_check.sh 
+#!/bin/bash
+
+if [ $(ps -C haproxy --no-header | wc -l) -eq 0 ]; then
+     systemctl start haproxy
+fi
+sleep 2
+if [ $(ps -C haproxy --no-header | wc -l) -eq 0 ]; then
+       systemctl stop keepalived
+fi
+
+
+[root@ha01 keepalived]# 
+```
+
+
+
+防火墙配置
+
+```
+firewall-cmd --permanent --zone=public --add-service=http
+firewall-cmd --permanent --zone=public --add-port=8080/tcp
+firewall-cmd --permanent --direct --add-rule ipv4 filter INPUT 0 --destination 224.0.0.18 --protocol vrrp -j ACCEPT
+
+firewall-cmd --reload
+firewall-cmd --list-all
+```
+
+
+</xmp>
+
+<script src="../../strapdown/strapdown.js"></script>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>服务器部署</title>
+<BR><BR><BR>
+<xmp theme="united" style="display:none;">
+
+## Firewall配置
+
+CentOS防火墙配置，一般有两种：
+
+- 允许外部主机访问系统某个端口
+
+  例如：
+
+  ```
+  firewall-cmd --permanent --zone=public --add-port=4567/tcp
+  firewall-cmd --permanent --zone=public --add-port=4568/tcp
+  firewall-cmd --permanent --zone=public --add-port=4444/tcp
+  firewall-cmd --permanent --zone=public --add-port=8080/tcp
+  ```
+
+  ​
+
+  keepalived服务需要打开相应组播配置：
+
+  ```
+  firewall-cmd --permanent --direct --add-rule ipv4 filter INPUT 0 --destination 224.0.0.18 --protocol vrrp -j ACCEPT
+  ```
+
+  ​
+
+- 允许外部主机访问系统某种服务
+
+  例如：
+
+  ```
+  firewall-cmd --permanent --zone=public --add-service=mysql
+  firewall-cmd --permanent --zone=public --add-service=http
+  firewall-cmd --permanent --zone=public --add-service=ntp
+  firewall-cmd --permanent --zone=public --add-service=openvpn
+  ```
+
+
+
+配置完成后，需要使用`firewall-cmd --reload` 指令更新防火墙配置，使用`firewall-cmd --list-all`指令可查看防火墙当前配置，如下：
+
+```
+[root@vpn1 ~]# firewall-cmd --list-all
+public (active)
+  target: default
+  icmp-block-inversion: no
+  interfaces: ens160
+  sources: 
+  services: dhcpv6-client openvpn ntp http mysql ssh
+  ports: 4567/tcp 4568/tcp 4444/tcp 8080/tcp
+  protocols: 
+  masquerade: no
+  forward-ports: 
+  sourceports: 
+  icmp-blocks: 
+  rich rules: 
+	
+[root@vpn1 ~]# 
+```
+
+
+
+防火墙服务的相关操作：
+
+- 启动服务
+
+  ```
+  systemctl start firewalld
+  ```
+
+- 停止服务
+
+  ```
+  systemctl stop firewalld
+  ```
+
+- 重启服务
+
+  ```
+  systemctl restart firewalld
+  ```
+
+- 禁止开机启动
+
+  ```
+  systemctl disable firewalld
+  ```
+
+- 允许开机启动
+
+  ```
+  systemctl enable firewalld
+  ```
+
+
+
+</xmp>
+
+<script src="../../strapdown/strapdown.js"></script>
+</html>
