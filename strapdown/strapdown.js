@@ -1565,7 +1565,7 @@ var prettyPrint; (function() {
         document.body.insertBefore(newNode, document.body.firstChild);
         var title = titleEl.innerHTML;
         var headlineEl = document.getElementById('headline');
-        if (headlineEl) headlineEl.innerHTML = title + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='/index.html'>首页</a>" + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='/content/20160101Markdown/index.html'>Markdown</a>";
+        if (headlineEl) headlineEl.innerHTML = "<a href='/index.html'>首页</a>" + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='/content/20160101Markdown/index.html'>Markdown</a>";
     }
 
     //////////////////////////////////////////////////////////////////////
