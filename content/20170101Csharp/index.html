@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>C#</title>
+<BR><BR><BR>
+<xmp theme="united" style="display:none;">
+
+## C# GDI 绘图 滚动的轮子
+
+> 想研究下动画，用C#，试着做一个滚动的轮子。实在不会写，费了很大劲。
+> 
+> 大学时候学习计算机图形学，用的Turbo C，现在的电脑运行不了TC的绘图。
+
+![轮子效果](./lunzi.gif)
+
+
+```
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Windows.Forms;
+using System.Timers;
+
+namespace WinSDITest
+{
+    
+    /// <summary>
+    /// Description of MainForm.
+    /// </summary>
+    public partial class MainForm : Form
+    {
+        //Timer不要声明成局部变量，否则会被GC回收
+        private static System.Timers.Timer aTimer;
+        
+        private static int centerX = 50;
+        private static int centerY = 250;
+        private static double a = 0.0;
+        private static int r = 50;
+        private static int step = 15;
+        
+        private static Graphics g;
+        private static Pen pen;
+        private static Point n1;
+        private static Point n2;
+            
+        public MainForm()
+        {
+            //
+            // The InitializeComponent() call is required for Windows Forms designer support.
+            //
+            InitializeComponent();
+            
+            //
+            // TODO: Add constructor code after the InitializeComponent() call.
+            //
+            
+            //实例化Timer类，设置间隔时间为10000毫秒； 
+            aTimer = new System.Timers.Timer(10000);
+
+            //注册计时器的事件
+            aTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
+
+            //设置时间间隔为2秒（2000毫秒），覆盖构造函数设置的间隔
+            aTimer.Interval = 200;
+
+            //设置是执行一次（false）还是一直执行(true)，默认为true
+            aTimer.AutoReset = true;
+
+            //开始计时
+            //aTimer.Enabled = true;
+        
+            g = this.CreateGraphics();//创建GDI对像
+            pen = new Pen(Brushes.Red);//创建画笔(颜色)
+            
+            Point n1 = new Point(50, 250);
+            Point n2 = new Point(50, 250);
+        }
+        
+        //指定Timer触发的事件
+        private static void OnTimedEvent(object source, ElapsedEventArgs e)
+        {
+            g.Clear(Color.White);
+            
+            g.DrawLine(pen, 0, 300, 1000,300);
+            g.DrawEllipse(pen, centerX - r,200,100,100);
+            
+            n1.X = centerX + (int)(r* Math.Cos(a));
+            n1.Y = centerY + (int)(r* Math.Sin(a));
+            n2.X = centerX + (int)(r* Math.Cos(a+Math.PI));
+            n2.Y = centerY + (int)(r* Math.Sin(a+Math.PI));
+            g.DrawLine(pen, n1, n2);
+            
+            
+            n1.X = centerX + (int)(r* Math.Cos(a+Math.PI/3));
+            n1.Y = centerY + (int)(r* Math.Sin(a+Math.PI/3));
+            n2.X = centerX + (int)(r* Math.Cos(a+Math.PI + Math.PI/3));
+            n2.Y = centerY + (int)(r* Math.Sin(a+Math.PI + Math.PI/3));
+            g.DrawLine(pen, n1, n2);
+            
+            
+            n1.X = centerX + (int)(r* Math.Cos(a+Math.PI*2/3));
+            n1.Y = centerY + (int)(r* Math.Sin(a+Math.PI*2/3));
+            n2.X = centerX + (int)(r* Math.Cos(a+Math.PI+Math.PI*2/3));
+            n2.Y = centerY + (int)(r* Math.Sin(a+Math.PI+Math.PI*2/3));
+            g.DrawLine(pen, n1, n2);
+            
+            centerX +=step;
+            a += step/50.0;
+            
+            if(centerX >= 1000)
+            {
+                centerX = 0;
+                //aTimer.Enabled = false;
+                //pen.Dispose();  
+                //g.Dispose();
+            }
+        }
+    
+        void Button1Click(object sender, EventArgs e)
+        {
+            if(button1.Text == "停止")
+            {
+                aTimer.Enabled = false;
+                button1.Text = "开始";
+            }
+            else
+            {
+                button1.Text = "停止";
+                //centerX = 50;
+                aTimer.Enabled = true;
+            }
+        }
+    }
+}
+```
+
+
+
+
+</xmp>
+
+<script src="../../strapdown/strapdown.js"></script>
+</html>
