@@ -61,7 +61,7 @@ wsrep_provider=/usr/lib64/galera/libgalera_smm.so
 wsrep_cluster_address="gcomm://192.168.98.60,192.168.98.61,192.168.98.62,192.168.98.63"
 wsrep_cluster_name='galera_cluster'
 wsrep_node_address='192.168.98.62'
-wsrep_node_name='db2.bitcomtech.com'
+wsrep_node_name='db2.xxx.com'
 wsrep_sst_method=rsync
 binlog_format=row
 default_storage_engine=InnoDB
@@ -88,7 +88,7 @@ query_cache_type=0
 其中以下内容为当前服务器的IP和名字
 ```
 wsrep_node_address='192.168.98.62'
-wsrep_node_name='db2.bitcomtech.com'
+wsrep_node_name='db2.xxx.com'
 ```
 
 以下内容为所有服务器的IP，以逗号隔开
@@ -132,7 +132,7 @@ vim /root/.my.cnf
 ```
 [mysqladmin]
 user=root
-password=zhtc
+password=xxxx
 ```
 
 <BR>
@@ -176,7 +176,7 @@ systemctl start mariadb
 
 - 查看集群活动节点个数
 ```
-mysqladmin extended-status --password=zhtc | grep wsrep_cluster_size
+mysqladmin extended-status --password=xxxx | grep wsrep_cluster_size
 ```
 
 
@@ -186,7 +186,7 @@ mysqladmin extended-status --password=zhtc | grep wsrep_cluster_size
 
 - 创建root密码
 ```
-mysqladmin -u root -p password zhtc
+mysqladmin -u root -p password xxxx
 ```
 
 - 连接数据库
@@ -207,7 +207,7 @@ flush privileges;
 
 - 允许root远程访问
 ```
-grant all privileges on *.* to root@"%" identified by "zhtc";  
+grant all privileges on *.* to root@"%" identified by "xxxx";  
 flush privileges;
 ```
 
