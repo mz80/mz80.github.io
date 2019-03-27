@@ -20,7 +20,7 @@
 
 ```
 #bind 127.0.0.1
-requirepass zhtc
+requirepass xxxx
 ```
 
 
@@ -64,7 +64,7 @@ vrrp_instance VI_1 {
     advert_int 1
     authentication {
         auth_type PASS
-        auth_pass 5qEnuFiozhl6glbv
+        auth_pass xxxxxxxxxxxxxx
     }
     virtual_ipaddress {
         192.168.0.241
@@ -98,7 +98,7 @@ total 20
 
 
 
-- `redis_backup.sh`文件内容如下，注意其中的IP地址，`两台服务器互写对方`，`zhtc`为`redis.conf`中配置的密码：
+- `redis_backup.sh`文件内容如下，注意其中的IP地址，`两台服务器互写对方`，`xxxx`为`redis.conf`中配置的密码：
 
 ```
 [root@redis01 scripts]# cat redis_backup.sh 
@@ -113,9 +113,9 @@ echo "Being slave...." >> $LOGFILE 2>&1
 
 sleep 15
 echo "Run SLAVEOF cmd ..." >> $LOGFILE
-$REDISCLI -a zhtc SLAVEOF 192.168.0.222 6379 >> $LOGFILE  2>&1
+$REDISCLI -a xxxx SLAVEOF 192.168.0.222 6379 >> $LOGFILE  2>&1
 echo "config password"
-$REDISCLI -a zhtc config set masterauth zhtc >> $LOGFILE  2>&1
+$REDISCLI -a xxxx config set masterauth xxxx >> $LOGFILE  2>&1
 
 
 [root@redis01 scripts]# 
@@ -130,7 +130,7 @@ $REDISCLI -a zhtc config set masterauth zhtc >> $LOGFILE  2>&1
 [root@redis01 scripts]# cat redis_check.sh 
 #!/bin/bash
 
-ALIVE=`/usr/bin/redis-cli -a zhtc PING`
+ALIVE=`/usr/bin/redis-cli -a xxxx PING`
 if [ "$ALIVE" == "PONG" ]; then
   echo $ALIVE
   exit 0
@@ -160,7 +160,7 @@ date >> $LOGFILE
 
 
 
-- `redis_master.sh`文件内容如下，注意其中的IP地址，`两台服务器互写对方`，`zhtc`为`redis.conf`中配置的密码：
+- `redis_master.sh`文件内容如下，注意其中的IP地址，`两台服务器互写对方`，`xxxx`为`redis.conf`中配置的密码：
 
 ```
 [root@redis01 scripts]# cat redis_master.sh 
@@ -174,14 +174,14 @@ date >> $LOGFILE
 echo "Being master...." >> $LOGFILE 2>&1
 
 echo "Run SLAVEOF cmd ..." >> $LOGFILE
-$REDISCLI -a zhtc SLAVEOF 192.168.0.222 6379 >> $LOGFILE  2>&1
+$REDISCLI -a xxxx SLAVEOF 192.168.0.222 6379 >> $LOGFILE  2>&1
 echo "config password"
-$REDISCLI -a zhtc config set masterauth zhtc >> $LOGFILE  2>&1
+$REDISCLI -a xxxx config set masterauth xxxx >> $LOGFILE  2>&1
 
 sleep 10
 
 echo "Run SLAVEOF NO ONE cmd ..." >> $LOGFILE
-$REDISCLI -a zhtc SLAVEOF NO ONE >> $LOGFILE 2>&1
+$REDISCLI -a xxxx SLAVEOF NO ONE >> $LOGFILE 2>&1
 
 echo "Redis_master execute complete " >> $LOGFILE
 [root@redis01 scripts]# 
@@ -209,7 +209,7 @@ date >> $LOGFILE
 
 ```
 [root@redis01 scripts]# redis-cli 
-127.0.0.1:6379> auth zhtc
+127.0.0.1:6379> auth xxxx
 OK
 127.0.0.1:6379> info
 # Server
